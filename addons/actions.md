@@ -1,5 +1,7 @@
 ---
+
 layout: documentation
+
 title: Actions
 ---
 
@@ -8,7 +10,8 @@ title: Actions
 # Actions
 
 Actions are predefined methods that are called from openHAB rules and scripts.
-They are automatically imported and can be used to execute openHAB-specific operations or to send commands or data to external hardware or services. There are a set of built in core Actions and optional installable Actions.
+They can be used to execute operations inside your home automation system, or they may be used to send commands or data to external hardware or services.
+Some Actions are built in to openHAB, and others are optional; you can install optional Actions using the PaperUI.
 
 The page is structured as follows:
 
@@ -19,21 +22,24 @@ The page is structured as follows:
 
 ## Core Actions
 
-The following Actions are a core part of openHAB and do not need to be separately installed.
+The following Actions are built in to openHAB:
 
 ### Event Bus Actions
 
-- `sendCommand(String itemName, String commandString)`: Sends the given command to the specified Item to the event bus.
-- `postUpdate(String itemName, String commandString)`: Sends the given status update to the specified Item to the event bus.
+- `sendCommand(String itemName, String commandString)`: Sends the given command to the specified Item via the event bus.
+- `postUpdate(String itemName, String commandString)`: Sends the given status update to the specified Item via the event bus.
 
-When the result of the commandString is to cause some action (e.g. turn on a light, change a thermostat to a new temperature, etc.) then use sendCommand. When interacting with widgets on the user interfaces commands are sent to the Items.
+When the execution of `commandString` causes some action (e.g. the turn on of a light or the changing of a thermostat to a new temperature, etc.), use `sendCommand`.
+When interacting with a widget on a user interface, the command is sent to the Item.
 
-When the result of the commandString is to change the state of an Item without causing some action (i.e. to make the state of an Item match the state of a device without commanding the device to change) then use postUpdate.
+When the result of the `commandString` is to change the state of an Item without causing some action to occur (i.e. to make the state of an Item match the state of a device without commanding the device to change), use postUpdate.
 
-As a general rule, is better to call `MyItem.sendCommand(command)` and `MyItem.postUpdate(command)` where possible because the Item methods are able to handle a wider variety of commands appropriately. The Actions are best reserved for use in cases where the Item's name is determined at runtime.
+As a general rule, it is better to call `MyItem.sendCommand(command)` and `MyItem.postUpdate(command)`.
+This is because Item methods are able to handle a wider variety of commands appropriately. Actions are best reserved for use in cases where the Item's name is determined at runtime.
 
 - `Map<Item, State> storeStates(Item item1, Item item2, ... Item itemn)`: Returns a `Map<Item, State>` with the current state of each Item. All members of Groups are put into the Map but not the Group's state itself.
-- `restoreStates(Map<Item, State> statesMap)`: Restores the items' states from the map. If the saved state can be interpreted as a command (ON/OFF/etc.), a command is sent to the Item. Otherwise an update is sent to the Item.
+- `restoreStates(Map<Item, State> statesMap)`: Restores the Items' states from the map. If the saved state can be interpreted as a command (ON/OFF/etc.), a command is sent to the Item.
+Otherwise an update is sent to the Item.
 
 ### Audio Actions
 
@@ -41,11 +47,11 @@ As a general rule, is better to call `MyItem.sendCommand(command)` and `MyItem.p
 - `increaseMasterVolume(float percent)`: Increases the volume by the given percent
 - `decreaseMasterVolume(float percent)`: Decreases the volume by the given percent
 - `float getMasterVolume()`: Returns the current volume as a float between 0 and 1
-- `playSound(String filename)`: Plays the given sound file. The file must be an mp3 or wav and located in `${openhab.home}/sounds`
+- `playSound(String filename)`: Plays the given sound file. The file format must be mp3 or wav, and must be located in located in `$OPENHAB_CONF/sounds`
 - `playStream(String url)`: Plays the audio stream at the given url
 - `say(String text)`: Says the given text through Text-to-Speech
-- `say(String text, String voice)`: Says the given text through the given voice (depends on the TTS engine and voices installed)
-- ` say(String text, String voice, String device)`: Says the given text through the given voice to the given output device (Mac OSX only).
+- `say(String text, String voice)`: Says the given text using the given voice (depends on the TTS engine and voices installed)
+- ` say(String text, String voice, String device)`: Says the given text using the given voice to the given output device (Mac OSX only).
 
 To get a list of available voices use `say -v ?` and to get a list of devices uses `say -a ?`.
 
@@ -56,13 +62,13 @@ To get a list of available voices use `say -v ?` and to get a list of devices us
 - `logWarn(String loggername, String logText)`: Logs logText on level WARN to openhab.log
 - `logError(String loggername, String logText)`: Logs logText on level ERROR to openhab.log
 
-`logText` can be a compete String, constructed through concatination, or through arguments.
+`logText` may be a compete String, constructed through concatenation, or through arguments.
 
 - **Complete String Example:** `logInfo("Garage", "This is a complete String")`
-- **Concatination Example:** `logDebug("Lighting", "This is a string concatination:" + Light.name)`
+- **Concatination Example:** `logDebug("Lighting", "This is a string concatenation:" + Light.name)`
 - **Arguments Example:** `logWarn("Alarm", "The {} window has been open for {} hours!", Window.name, timeOpen)`
 
-One can configure whether specific log entries are logged out and where they get logged to (e.g. to a separate file) by [editing the logger configuration]({{base}}/administration/logging.html).
+One can configure whether specific log entries are logged, and where they get logged to (e.g. to a separate file) by [editing the logger configuration]({{base}}/administration/logging.html).
 
 ### HTTP Actions
 
@@ -91,20 +97,20 @@ var Timer myTimer = createTimer(now.plusMinutes(5), [|
 The Timer object supports the following methods:
 
 - `cancel`: prevents the scheduled timer from executing
-- `isRunning`: returns true if the code is currently executing (i.e. the timer activated the code but it is not done running)
-- `hasTerminated`: returns true if the code has run and completed
+- `isRunning`: returns `true` if the code is currently executing (i.e. the timer activated the code but it is not done running)
+- `hasTerminated`: returns `true` if the code has run and completed
 - `reschedule(AbstractInstant instant)`: reschedules the timer to execute at the new time. If the Timer has terminated this method does nothing.
 
 ### Thing Status Action
 
-`getThingStatusInfo(String thingUID)`: Gets status information of the given thing identified by `thingUID`.
+`getThingStatusInfo(String thingUID)`: Gets status information of the given Thing identified by `thingUID`.
 
 The result is of type `ThingStatusInfo`.
 It contains [Thing Status]({{base}}/concepts/things.html), [Status Details]({{base}}/concepts/things.html) and [Status Description]({{base}}/concepts/things.html).
-Refer to [Thing Status API]({{base}}/concepts/things.html) for how to get those information.
+Refer to [Thing Status API]({{base}}/concepts/things.html) for how to get this information.
 If you just want to know the status, you can use `thingStatusInfo.getStatus().toString()` and the result will be one of the values in [Thing Status]({{base}}/concepts/things.html).
 
-> If the thing is removed or it's not added yet, it'll return null.
+> If the thing is removed or it's not added yet, it will return `null`.
 
 For example:
 
